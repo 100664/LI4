@@ -1,0 +1,21 @@
+﻿.leiloes {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Three equal-width columns */
+    grid-gap: 100px; /* Increase spacing between cards to 20px */
+}
+
+.card {
+    width: 20rem;
+    display: inline-block;
+    padding: 10px; /* Add padding around leilão names */
+}
+
+    .card h5 {
+        margin-bottom: 0;
+    }
+
+.card-img-top {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}

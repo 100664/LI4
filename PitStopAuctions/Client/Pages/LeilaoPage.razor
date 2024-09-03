@@ -1,0 +1,249 @@
+﻿@page "/leilao/{id:int}"
+@using PitStopAuctions.Shared;
+@inject ILeilaoService LeilaoService
+@inject IUtilizadorService UserService
+@inject ILanceService LanceService
+@inject ILocalStorageService LocalStorage
+
+
+<PageTitle>@leilao.Nome </PageTitle>
+
+
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <title>Leilão: @leilao.Nome</title>
+</head>
+<body>
+    <h1>Leilão: @leilao.Nome</h1>
+
+    <table>
+        <tbody>
+            <tr>
+                <th>Data e hora de início</th>
+                <td>@leilao.Data_inicio.ToString("yyyy-MM-dd HH:mm:ss")</td>
+            </tr>
+            <tr>
+                <th>Data e hora do fim</th>
+                <td>@leilao.Data_fim.ToString("yyyy-MM-dd HH:mm:ss")</td>
+            </tr>
+            <tr>
+                <th>Preço inicial</th>
+                <td>@leilao.PrecoInicial</td>
+            </tr>
+            <tr>
+                <th>Lance Atual</th>
+                <td>@lanceAtual.Montante</td>
+                @if (lanceAtual.UtilizadorID == user.Id)
+                {
+                    <td>
+                        ESTE LANCE É SEU    
+                    </td>
+                }
+            </tr>
+        </tbody>
+    </table>
+    <img src="@leilao.Imagem" alt="@leilao.Nome" class="rounded">
+
+    <h2>Informações do veículo</h2>
+
+    <table>
+        <tbody>
+            <tr>
+                <th>Nome</th>
+                <td>@leilao.Nome</td>
+            </tr>
+            <tr>
+                <th>Marca</th>
+                <td>MARCA</td>
+            </tr>
+            <tr>
+                <th>Modelo</th>
+                <td>@prod.Modelo</td>
+            </tr>
+            <tr>
+                <th>Versão</th>
+                <td>@prod.Versao</td>
+            </tr>
+            <tr>
+                <th>Combustível</th>
+                <td>@prod.Combustivel</td>
+            </tr>
+            <tr>
+                <th>Quilómetros</th>
+                <td>ESQUECI-ME :|</td>
+            </tr>
+            <tr>
+                <th>Cor</th>
+                <td>@prod.Cor</td>
+            </tr>
+            <tr>
+                <th>Tipo de caixa</th>
+                <td>@prod.TipoCaixa</td>
+            </tr>
+            <tr>
+                <th>Número de mudanças</th>
+                <td>@prod.NumeroMudancas</td>
+            </tr>
+            <tr>
+                <th>Número de portas</th>
+                <td>@prod.NumeroPortas</td>
+            </tr>
+            <tr>
+                <th>Lotação</th>
+                <td>@prod.Lotacao</td>
+            </tr>
+            <tr>
+                <th>Classe</th>
+                <td>@prod.Classe</td>
+            </tr>
+            <tr>
+                <th>Ano</th>
+                <td>@prod.Ano</td>
+            </tr>
+            <tr>
+                <th>Cilindrada</th>
+                <td>@prod.Cilindrada</td>
+            </tr>
+            <tr>
+                <th>Potência</th>
+                <td>@prod.Potencia</td>
+            </tr>
+
+            <tr>
+                <th>Lances</th>
+                <td>
+                    <ul>
+                        @if (leilao.Lances != null)
+                        {
+                            @foreach (var lance in leilao.Lances)
+                            {
+                                @if (lance.UtilizadorID == user.Id)
+                                {
+                                    <li>
+                                        Lance de @lance.Montante feito por VOÇÊ
+                                    </li>
+                                }
+                                else {
+                                <li>
+                                    Lance de @lance.Montante feito por ANONIMO
+                                </li>
+                                }
+                            }
+                        }
+                        else
+                        {
+                            <li>Este leilão não tem Lances</li>
+                        }
+                    </ul>
+                </td>
+            </tr>
+
+            @if (!string.IsNullOrWhiteSpace(username))
+            {
+                
+               
+                    <input type="text" @bind="montanteLance" placeholder="Montante do lance" name="uname" required>
+                
+                    <button class="btn btn-primary" @onclick="MeterLance">Confirmar Lance</button>
+                    @if (!deuLance)
+                    {
+                        <p style="color: orange;">Não foi possivel efetuar o lance, o lance atual já é seu.</p>
+                }
+
+            }
+            else
+            {
+                <button type = "button" class="btn btn-lg btn-primary" disabled>É preciso dar login para licitar</button>
+            }
+            
+        </tbody> 
+    </table>
+</body>
+</html>
+
+
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+    Leilao leilao = new Leilao();
+    Produto prod = new Produto();
+    Lance lanceAtual = new Lance();
+
+    int montanteLance;
+    string username = "";
+    Utilizador user = new Utilizador();
+    Boolean deuLance = true;
+
+    protected override async Task OnParametersSetAsync()
+    {
+
+        await UserService.GetUsers();
+        username = await LocalStorage.GetItemAsStringAsync("user");
+        if (!string.IsNullOrWhiteSpace(username))
+        {
+            user = await UserService.GetUserByUsername(username);
+        }
+
+        if (Id != null)
+        {
+
+
+            leilao = await LeilaoService.GetLeilao((int)Id);
+            prod = leilao.Produto;
+            lanceAtual = leilao.LanceAtual;
+
+            if (leilao == null)
+            {
+                // Handle the case where the leilao with the specified ID was not found.
+                // You might want to redirect to an error page or display a message.
+                // For now, you can set some default values or handle it according to your logic.
+                leilao = new Leilao();
+                leilao.Id = -123;
+            }
+        }
+        else
+        {
+            leilao = new Leilao();
+        }
+    }
+
+    private async void MeterLance()
+    {
+        leilao = await LeilaoService.GetLeilao((int)Id);
+        lanceAtual = leilao.LanceAtual;
+        Thread.Sleep(50);
+        if (lanceAtual.UtilizadorID == user.Id)
+        {
+            deuLance = false;
+            return;
+        }
+        if (montanteLance > leilao.LanceAtual.Montante)
+        {
+            deuLance = true;
+            username = await LocalStorage.GetItemAsStringAsync("user");
+            if (!string.IsNullOrWhiteSpace(username))
+            {
+                user = await UserService.GetUserByUsername(username);
+            }
+            Lance lance = new Lance();
+            lance.Hora = DateTime.Now;
+            lance.Montante = montanteLance;
+            lance.UtilizadorID = user.Id;
+            lance.LeilaoId = leilao.Id;
+            Lance lancenovo = await LanceService.CriarLance(lance);
+
+            leilao.LanceAtual = lancenovo;
+            leilao.LanceAtualId = lancenovo.Id;
+
+            await LeilaoService.UpdateLeilao(leilao);
+
+            lanceAtual = lancenovo;
+            leilao = await LeilaoService.GetLeilao((int)Id);
+            StateHasChanged();
+        }
+    }
+
+}

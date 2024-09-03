@@ -1,0 +1,58 @@
+﻿@page "/criarconta"
+@inject ILocalStorageService LocalStorage
+@inject IUtilizadorService UserService
+
+<PageTitle>Criar conta</PageTitle>
+
+@if (!string.IsNullOrWhiteSpace(userLoggedin))
+{
+    <p>Faça logout para criar uma nova conta.</p>
+}
+else
+{
+    
+
+<h3>CriarConta</h3>
+<form>
+    <h2>CRIAR CONTA</h2>
+    <label for="name">NOME:</label><br>
+    <input type="text" id="name" name="name"><br>
+    <label for="email">E-MAIL:</label><br>
+    <input type="email" id="email" name="email"><br>
+    <label for="username">NOME DE UTILIZADOR:</label><br>
+    <input type="text" id="username" name="username"><br>
+    <label for="password">PASSWORD:</label><br>
+    <input type="password" id="password" name="password"><br>
+    <label for="citizenCardNumber">NÚMERO DE CARTÃO DE CIDADÃO:</label><br>
+    <input type="text" id="citizenCardNumber" name="citizenCardNumber"><br>
+    <label for="taxIdNumber">NÚMERO DE IDENTIFICAÇÃO FICAL:</label><br>
+    <input type="text" id="taxIdNumber" name="taxIdNumber"><br>
+    <label for="address">MORADA:</label><br>
+    <input type="text" id="address" name="address"><br>
+    <label for="city">CIDADE:</label><br>
+    <input type="text" id="city" name="city"><br>
+    <label for="client">CLIENTE:</label><br>
+    <select id="client" name="client">
+        <!-- Add client options here -->
+    </select><br>
+    <label for="brand">MARCA:</label><br>
+    <select id="brand" name="brand">
+        <!-- Add brand options here -->
+    </select><br>
+    <label for="postalCode">CÓDIGO POSTAL:</label><br>
+    <input type="text" id="postalCode" name="postalCode"><br><br>
+    <input type="submit" value="CRIAR CONTA">
+</form>
+}
+
+
+@code {
+    string userLoggedin = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await UserService.GetUsers();
+        userLoggedin = await LocalStorage.GetItemAsStringAsync("user");
+
+    }
+}

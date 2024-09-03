@@ -1,0 +1,52 @@
+﻿@page "/marcas"
+@inject IMarcaService MarcaService
+@inject ILocalStorageService LocalStorage
+@inject NavigationManager NavigationManager
+
+<PageTitle>Marcas</PageTitle>
+<h3>Marcas que confiam no nosso serviço: </h3>
+
+<div class="leiloes">
+    @foreach (var marca in MarcaService.Marcas)
+    {
+        if (marca.Approved == true)
+        {
+            <div class="card shadow" style="width: 18rem;">
+                <img src="@marca.Image" class="card-img-top" alt="@marca.Nome">
+            <div class="card-body">
+                <h5 class="card-title">@marca.Nome</h5>
+                <h6 class="card-subtitle mb-3 text-muted">
+                    <span class="oi oi-map-marker"></span>
+                    @marca.Nome
+                </h6>
+                <div class="d-flex justify-content-between">
+                    <span>
+                        <span class="oi oi-clock mr-2"></span>
+                        @marca.Morada
+                    </span>
+                </div>
+                    <p>
+                        <button class="btn btn-primary" @onclick="(() => ShowMarca(marca.Id))"><i class="oi oi-document"></i></button>
+                    </p>
+            </div>
+        </div>
+        }
+    }
+</div>
+
+@code {
+
+    string userLoggedin = "";
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        userLoggedin = await LocalStorage.GetItemAsStringAsync("user");
+        await MarcaService.GetMarcas();
+    }
+
+    void ShowMarca(int id)
+    {
+        NavigationManager.NavigateTo($"marca/{id}");
+    }
+}

@@ -1,0 +1,87 @@
+﻿@page "/marca/{id:int}"
+@using PitStopAuctions.Shared;
+@inject ILocalStorageService LocalStorage
+@inject IMarcaService MarcaService
+
+<PageTitle>@marca.Nome </PageTitle>
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Descobre @marca.Nome @userLoggedin !</title>
+</head>
+<body>
+    <h1>Descobre @marca.Nome</h1>
+
+    <div>
+        <h4>Descobre @marca.Nome</h4>
+        <hr />
+        <dl class="row">
+            <dt class="col-sm-2">ID</dt>
+            <dd class="col-sm-10">@marca.Nome</dd>
+
+            <dt class="col-sm-2">Descricao</dt>
+            <dd class="col-sm-10">@marca.Cidade</dd>
+
+            <dt class="col-sm-2">Data Inicio</dt>
+            <dd class="col-sm-10">@marca.Morada</dd>
+
+            <dt class="col-sm-2">Data Fim</dt>
+            <dd class="col-sm-10">@marca.CodPostal</dd>
+
+            <dt class="col-sm-2">Imagens</dt>
+            <dd class="col-sm-10">
+                @if (!string.IsNullOrEmpty(marca.Image))
+                {
+                    <img src="@marca.Image" alt="Marca Image" style="max-width: 100%;" />
+                }
+                else
+                {
+                    <span>No Image</span>
+                }
+            </dd>
+
+
+        </dl>
+    </div>
+</body>
+</html>
+
+
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+    Marca marca = new Marca();
+    string userLoggedin = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        userLoggedin = await LocalStorage.GetItemAsStringAsync("user");
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Id != null)
+        {
+
+
+            marca = await MarcaService.GetMarca((int)Id);
+
+            if (marca == null)
+            {
+                // Handle the case where the leilao with the specified ID was not found.
+                // You might want to redirect to an error page or display a message.
+                // For now, you can set some default values or handle it according to your logic.
+                marca = new Marca();
+                marca.Id = -123;
+            }
+        }
+        else
+        {
+            marca = new Marca();
+        }
+    }
+
+}

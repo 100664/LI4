@@ -1,0 +1,106 @@
+﻿@page "/adminView"
+@using PitStopAuctions.Shared;
+@inject ILocalStorageService LocalStorage
+@inject IMarcaService MarcaService
+@inject IUtilizadorService UserService
+
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .image-text-div {
+            display: table;
+            flex-direction: row;
+            margin: 0 auto;
+            width: 800px;
+            height: 300px;
+            background-color: #eee;
+            border: 1px solid #ccc;
+        }
+
+            .image-text-div img {
+                width: 250px;
+                height: 150px;
+                margin-right: 20px;
+                align-content: left;
+            }
+
+            .image-text-div p {
+                text-align: right;
+            }
+    </style>
+</head>
+<body>
+    @if (user.IsAdmin == true)
+    {
+        @foreach (var marca in MarcaService.Marcas)
+        {
+            @if (marca.Approved == false)
+            {
+                <div style="height: 10px;"></div>
+
+                <div class="image-text-div">
+                    <img src="@marca.Image" alt="@marca.Nome">
+                    <table>
+                        <tr>
+                            <th>Nome:</th>
+                            <td>@marca.Nome</td>
+                        </tr>
+                        <tr>
+                            <th>EMail:</th>
+                            <td>@marca.Email</td>
+                        </tr>
+                        <tr>
+                            <th>Cidade:</th>
+                            <td>@marca.Cidade</td>
+                        </tr>
+                        <tr>
+                            <th>Morada:</th>
+                            <td>@marca.Morada</td>
+                        </tr>
+                        <tr>
+                            <th>Codigo Postal:</th>
+                            <td>@marca.CodPostal</td>
+                        </tr>
+                    </table>
+                    <button class="btn btn-outline-success" @onclick="() => AprovarMarca(marca.Id)">Aprovar marca</button>
+
+                </div>
+            }
+        }
+    }
+    else
+    {
+        <p>Acesso bloqueado a não moderadores.</p>
+        <p>@user.IsAdmin</p>
+    }
+</body>
+</html>
+
+@code {
+    string userLoggedin = "";
+    string name = "";
+    Utilizador user = new Utilizador();
+    Marca m = new Marca();
+    List<Marca> marcas = new List<Marca>();
+    protected override async Task OnInitializedAsync()
+    {
+        await UserService.GetUsers();
+        userLoggedin = await LocalStorage.GetItemAsStringAsync("user");
+        name = await LocalStorage.GetItemAsStringAsync("name");
+        user = await UserService.GetUserByUsername(userLoggedin);
+        await MarcaService.GetMarcas();
+        marcas = MarcaService.Marcas;
+
+    }
+
+    public async void AprovarMarca(int id)
+    {
+        m = await  MarcaService.GetMarca(id);
+        m.Approved = true;
+        await MarcaService.UpdateMarca(m);
+        marcas = MarcaService.Marcas;
+        StateHasChanged();
+    }
+
+}

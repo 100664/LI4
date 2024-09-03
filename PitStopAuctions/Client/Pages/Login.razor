@@ -1,0 +1,183 @@
+﻿@page "/login"
+@inject IUtilizadorService UserService
+@inject ILocalStorageService LocalStorage
+@inject IMarcaService MarcaService
+@inject NavigationManager NavigationManager
+
+@using System.Net.Http.Headers;
+@using PitStopAuctions.Shared;
+
+
+
+@if (!string.IsNullOrWhiteSpace(userLoggedin))
+{
+    <PageTitle>Login</PageTitle>
+    <p>Olá, @name !</p>
+    <p>Voçê já está logado :)</p>
+}
+else{
+
+    <PageTitle>Login</PageTitle>
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Login Form</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+            }
+
+            .container {
+                width: 300px;
+                padding: 16px;
+                background-color: white;
+                margin: 0 auto;
+                margin-top: 100px;
+                border: 1px solid black;
+                border-radius: 4px;
+            }
+
+            input[type=text], input[type=password] {
+                width: 100%;
+                padding: 15px;
+                margin: 5px 0 22px 0;
+                border: none;
+                background: #f1f1f1;
+            }
+
+            input[type=submit] {
+                background-color: #121111db;
+                color: white;
+                padding: 14px 20px;
+                margin: 8px 0;
+                border: none;
+                cursor: pointer;
+                width: 100%;
+            }
+
+            .container input[type=submit]:hover {
+                background-color: #121111db;
+            }
+        </style>
+    </head>
+    <body>
+
+        <div class="container">
+            <label for="uname"><b>Username</b></label>
+            <input type="text" @bind="logininfo.username" placeholder="Enter Username" name="uname" required>
+
+            <label for="psw"><b>Password</b></label>
+            <input type="password" @bind="logininfo.password" placeholder="Enter Password" name="psw" required>
+
+            <input type="submit" value="Login" @onclick="SubmitAsync" disabled="@(!isOptionSelected)">
+
+            @if (loginFailed)
+            {
+                <p style="color:red;">As credenciais não coincidem. Por favor, tente novamente.</p>
+            }
+            @if (!isOptionSelected)
+            {
+                <p style="color:red;">Escolha uma das duas opções.</p>
+            }
+            <form>
+                <label>
+                    <input type="radio" name="option" value="Option 1" @onchange="@OptionChanged" />
+                    Cliente
+                </label>
+                <label>
+                    <input type="radio" name="option" value="Option 2" @onchange="@OptionChanged" />
+                    Marca
+                </label>
+            </form>
+            
+        </div>
+
+    </body>
+    </html>
+}
+
+
+
+
+
+
+@code {
+
+    LoginInfo logininfo = new LoginInfo();
+    string userLoggedin = "";
+    string name = "";
+    string userOuMarca = "";
+    string marca = "";
+    bool isOptionSelected = false;
+    bool loginFailed = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await UserService.GetUsers();
+        userLoggedin = await LocalStorage.GetItemAsStringAsync("user");
+        name  = await LocalStorage.GetItemAsStringAsync("name");
+        marca = await LocalStorage.GetItemAsStringAsync("marca");
+
+    }
+
+    async Task SubmitAsync()
+    {
+        if (userOuMarca.Equals("Option 1"))
+        {
+            Utilizador user;
+            try
+            {
+                user = await UserService.GetUserByUsername(logininfo.username);
+            }
+            catch (Exception e)
+            {
+                loginFailed = true;
+                return;
+            }
+            if (user == null || !user.CheckPassword(logininfo.password))
+            {
+                loginFailed = true;
+                return;
+            }
+            await LocalStorage.SetItemAsStringAsync("name", user.Nome);
+            await LocalStorage.SetItemAsStringAsync("user", logininfo.username);
+            await LocalStorage.SetItemAsStringAsync("marca", "no");
+            if (user.IsAdmin == true)
+            {
+                NavigationManager.NavigateTo("/adminview", true);
+            }
+            else
+            {
+                NavigationManager.NavigateTo("/", true);
+            }
+        } else
+        {
+            Marca marca;
+            try
+            {
+                marca = await MarcaService.GetMarcaByUsername(logininfo.username);
+            }
+            catch (Exception e)
+            {
+                loginFailed = true;
+                return;
+            }
+            if (marca == null || !marca.CheckPassword(logininfo.password))
+            {
+                loginFailed = true;
+                return;
+            }
+            await LocalStorage.SetItemAsStringAsync("name", marca.Nome);
+            await LocalStorage.SetItemAsStringAsync("user", marca.Username);
+            await LocalStorage.SetItemAsStringAsync("marca", "yes");
+            NavigationManager.NavigateTo("/", true);
+        }
+    }
+
+    private void OptionChanged(ChangeEventArgs e)
+    {
+        userOuMarca = e.Value.ToString();
+        isOptionSelected = true;
+    }
+}

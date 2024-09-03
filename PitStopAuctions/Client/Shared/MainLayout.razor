@@ -1,0 +1,121 @@
+﻿@inherits LayoutComponentBase
+@inject ILocalStorageService LocalStorage
+@inject IUtilizadorService UserService
+@inject IMarcaService MarcaService
+
+@inject NavigationManager NavigationManager
+@using PitStopAuctions.Shared;
+
+
+<head>
+    <style>
+        body {
+            background-color: #e9e9e9fc;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <main>
+            <div class="top-row d-flex justify-content-between align-items-center px-4">
+                <div class="left">
+                    <a href="/">
+                        <b style="color: #121111db;"> Página Inicial </b>
+                    </a>
+                </div>
+                <div class="center">
+                    <a>
+                        <img src="PitstopAuctionsLogo.png" alt="PitStop Auctions" style="width: 200px; height: 50px;">
+                    </a>
+                </div>
+                <div class="right">
+                    
+                    @if (marca.Equals("yes"))
+                    {
+                        <button class="btn btn-secondary me-2" @onclick="NavigateToCriarLeilao">Criar Leilão</button>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(userLoggedin))
+                    {
+                        @if (marca.Equals("no"))
+                        {
+                            @if (user.IsAdmin)
+                            {
+                                <button class="btn btn-secondary me-2" @onclick="NavigateToAdmin">Aprovar Marcas</button>
+                            }
+                        }
+                        <button class="btn btn-danger" @onclick="LogOut">Logout</button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-secondary me-2" @onclick="NavigateToRegistar">Registar</button>
+                        <button class="btn btn-secondary" @onclick="NavigateToLogin">Login</button>
+                    }
+                </div>
+            </div>
+            <article class="content px-4">
+                @Body
+            </article>
+        </main>
+    </div>
+</body>
+
+@code{
+    string userLoggedin = "";
+    string name = "";
+    string marca = "dd";
+    Utilizador user = new Utilizador();
+    Marca marca_ = new Marca();
+
+    protected override async Task OnInitializedAsync()
+    {
+        userLoggedin = await LocalStorage.GetItemAsStringAsync("user");
+        marca = await LocalStorage.GetItemAsStringAsync("marca");
+        if (!string.IsNullOrWhiteSpace(userLoggedin) && marca.Equals("no"))
+        {
+            user = await UserService.GetUserByUsername(userLoggedin);
+        }
+        if (string.IsNullOrWhiteSpace(marca))
+        {
+            marca = "__";
+        }
+        else if (marca.Equals("yes"))
+        {
+            marca_ = await MarcaService.GetMarcaByUsername(userLoggedin);
+        }
+        name = await LocalStorage.GetItemAsStringAsync("name");
+
+    }
+
+    async Task NavigateToLogin()
+    {
+        NavigationManager.NavigateTo("/login");
+    }
+
+    async Task NavigateToRegistar()
+    {
+        NavigationManager.NavigateTo("/signup");
+    }
+
+    async Task NavigateToAdmin()
+    {
+        NavigationManager.NavigateTo("/adminview");
+    }
+
+    async Task NavigateToCriarLeilao()
+    {
+        NavigationManager.NavigateTo("/criarleilao");
+    }
+
+    async Task LogOut()
+    {
+        userLoggedin = "";
+        name = "";
+        marca = "";
+        user = new Utilizador();
+        marca_ = new Marca();
+        await LocalStorage.SetItemAsStringAsync("user", userLoggedin);
+        await LocalStorage.SetItemAsStringAsync("name", name);
+        await LocalStorage.SetItemAsStringAsync("marca", marca);
+        NavigationManager.NavigateTo("/login", true);
+    }
+}

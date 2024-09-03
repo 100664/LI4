@@ -1,0 +1,212 @@
+﻿@page "/criarleilao"
+@using PitStopAuctions.Shared;
+@inject IUtilizadorService UserService
+@inject ILeilaoService LeilaoService
+@inject IMarcaService MarcaService
+@inject NavigationManager NavigationManager
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Criar Leilao form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            width: 1000px;
+            padding: 16px;
+            background-color: white;
+            margin: 0 auto;
+            margin-top: 100px;
+            border: 1px solid black;
+            border-radius: 4px;
+        }
+
+        input[type=text], input[type=password] {
+            width: 100%;
+            padding: 15px;
+            margin: 5px 0 22px 0;
+            border: none;
+            background: #f1f1f1;
+        }
+
+        input[type=submit] {
+            background-color: #121111db;
+            color: white;
+            padding: 14px 20px;
+            margin: 8px 0;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .container input[type=submit]:hover {
+            background-color: #121111db;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <label for="nome">Nome:</label>
+        <input type="text" id="nome" @bind="leilao_novo.Nome" placeholder="Nome" name="nome" required>
+
+        <label for="descricao">Descrição:</label>
+        <input type="text" id="descricao" @bind="leilao_novo.Descricao" placeholder="Descrição" name="email" required>
+
+        <label for="dataInicio">Data de Início e de Finalização:</label>
+        <div style="display: flex;">
+            <input type="datetime-local" id="dataInicio" @bind="leilao_novo.Data_inicio" placeholder="Data de inicio" name="username" required>
+            <div style="width: 10px;"></div>
+            <input type="datetime-local" id="dataFim" @bind="leilao_novo.Data_fim" placeholder="Data de finalização" name="username" required>
+        </div>
+        <div style="height: 15px;"></div>
+        <label for="precoInicial">Preço Inicial:</label>
+        <input type="text" id="precoInicial" @bind="leilao_novo.PrecoInicial" placeholder="Preço Inicial" name="email" required>
+
+        <label for="imagem">Imagem:</label>
+        <input type="text" id="imagem" @bind="leilao_novo.Imagem" placeholder="Imagem" name="imagem" required>
+
+        <label for="modelo">Modelo:</label>
+        <input type="text" id="modelo" @bind="prod.Modelo" placeholder="Modelo" name="email" required>
+
+        <label for="versao">Versão:</label>
+        <input type="text" id="versao" @bind="prod.Versao" placeholder="Versão" name="email" required>
+
+        <label for="combustivel">Combustível:</label>
+        <div style="height: 5px;"></div>
+        <select id="combustivel" @bind="prod.Combustivel" required>
+            <option value="Diesel">Diesel</option>
+            <option value="Elétrico">Elétrico</option>
+            <option value="Gasolina">Gasolina</option>
+            <option value="GNC">GNC</option>
+            <option value="GPL">GPL</option>
+            <option value="Híbrido(diesel)">Híbrido(diesel)</option>
+            <option value="Híbrido(gasolina)">Híbrido(gasolina)</option>
+            <option value="Hidrogénio">Hidrogénio</option>
+        </select>
+        <div style="height: 15px;"></div>
+        <label for="ano">Ano:</label>
+        <input type="text" id="ano" @bind="prod.Ano" placeholder="Ano" name="email" required>
+
+        <label for="cilindrada">Cilindrada:</label>
+        <input type="text" id="cilindrada" @bind="prod.Cilindrada" placeholder="Cilindrada" name="email" required>
+
+        <label for="potencia">Potência:</label>
+        <input type="text" id="potencia" @bind="prod.Potencia" placeholder="Potência" name="email" required>
+
+        <label for="cor">Cor:</label>
+        <input type="text" id="cor" @bind="prod.Cor" placeholder="Cor" name="email" required>
+
+        <label for="tipoCaixa">Tipo de Caixa:</label>
+        <div style="height: 5px;"></div>
+
+        <select id="tipoCaixa" @bind="prod.TipoCaixa" required>
+            <option value="Manual">Manual</option>
+            <option value="Automática">Automática</option>
+        </select>
+        <div style="height: 15px;"></div>
+
+        <label for="numeroMudancas">Número de Mudanças:</label>
+        <input type="text" id="numeroMudancas" @bind="prod.NumeroMudancas" placeholder="Número de Mudanças" name="email" required>
+
+        <label for="numeroPortas">Número de Portas:</label>
+        <input type="text" id="numeroPortas" @bind="prod.NumeroPortas" placeholder="Número de Portas" name="email" required>
+
+        <label for="lotacao">Lotação:</label>
+        <input type="text" id="lotacao" @bind="prod.Lotacao" placeholder="Lotação" name="email" required>
+
+        <label for="classe">Classe:</label>
+        <input type="text" id="classe" @bind="prod.Classe" placeholder="Classe" name="email" required>
+
+        <label for="tracao">Tração:</label>
+        <div style="height: 5px;"></div>
+
+        <select id="tracao" @bind="prod.Tracao" required>
+            <option value="RWD">Rear-Wheel Drive (RWD)</option>
+            <option value="AWD">All-Wheel Drive (AWD)</option>
+            <option value="FWD">Front-Wheel Drive (FWD)</option>
+        </select>
+        <div style="height: 15px;"></div>
+
+        <div style="width: 10px;"></div>
+
+        <label for="emissaoCO2">Emissão CO2:</label>
+        <input type="text" id="emissaoCO2" @bind="prod.EmissaoCO2" placeholder="Emissão CO2" name="email" required>
+
+        <label for="garantiaStand">Garantia Stand:</label>
+        <input type="text" id="garantiaStand" @bind="prod.GarantiaStand" placeholder="Garantia Stand" name="email" required>
+
+        <label for="registo">Registo:</label>
+        <input type="text" id="registo" @bind="prod.Registo" placeholder="Registo" name="email" required>
+
+        <label for="origem">Origem:</label>
+        <input type="text" id="origem" @bind="prod.Origem" placeholder="Origem" name="email" required>
+
+        <input type="submit" value="Criar leilão" @onclick="SubmitAsync">
+
+        @if (registrationFailed)
+        {
+            <p style="color:red;">Registo abortado dado a credenciais já registadas.</p>
+        }
+    </div>
+
+
+</body>
+</html>
+
+@code {
+
+    Utilizador user = new Utilizador();
+    Leilao leilao_novo = new Leilao();
+    Marca marca = new Marca();
+    Produto prod = new Produto();
+    DateTime data = new DateTime();
+    private string selectedOption;
+    bool registrationFailed = false;
+
+    async Task SubmitAsync()
+    {
+        if (selectedOption == "Option 1")
+        {
+            try
+            {
+                await UserService.CriarUser(user);
+            }
+            catch (Exception e)
+            {
+                registrationFailed = true;
+                return;
+            }
+            NavigationManager.NavigateTo("/login", true);
+        }
+        else if (selectedOption == "Option 2")
+        {
+            try
+            {
+                marca.Nome = user.Nome;
+                marca.Nif = user.Nif;
+                marca.Email = user.Email;
+                marca.Username = user.Username;
+                marca.Password = user.Password;
+                marca.Morada = user.Morada;
+                marca.Cidade = user.Cidade;
+                marca.CodPostal = user.CodPostal;
+                await MarcaService.CriarMarca(marca);
+            }
+            catch (Exception e)
+            {
+                registrationFailed = true;
+                return;
+            }
+            NavigationManager.NavigateTo("/login", true);
+        }
+    }
+
+    private void OptionChanged(ChangeEventArgs e)
+    {
+        selectedOption = e.Value.ToString();
+    }
+}

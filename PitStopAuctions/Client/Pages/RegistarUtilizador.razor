@@ -1,0 +1,146 @@
+﻿@page "/signup"
+@using PitStopAuctions.Shared;
+@inject IUtilizadorService UserService
+@inject IMarcaService MarcaService
+@inject NavigationManager NavigationManager
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sign Up Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            width: 800px;
+            padding: 16px;
+            background-color: white;
+            margin: 0 auto;
+            margin-top: 100px;
+            border: 1px solid black;
+            border-radius: 4px;
+        }
+
+        input[type=text], input[type=password] {
+            width: 100%;
+            padding: 15px;
+            margin: 5px 0 22px 0;
+            border: none;
+            background: #f1f1f1;
+        }
+
+        input[type=submit] {
+            background-color: #121111db;
+            color: white;
+            padding: 14px 20px;
+            margin: 8px 0;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .container input[type=submit]:hover {
+            background-color: #121111db;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <input type="text" @bind="user.Nome" placeholder="Nome" name="nome" required>
+        <input type="text" @bind="user.Email" placeholder="Email" name="email" required>
+        <input type="text" @bind="user.Username" placeholder="Nome de Utilizador" name="username" required>
+        <input type="password" @bind="user.Password" placeholder="Password" name="password" required>
+
+
+        @if (selectedOption == "Option 1")
+        {
+            <input type="text" @bind="user.CC" placeholder="Número de Cartão de Cidadão" name="cc" required>
+        }
+        else if (selectedOption == "Option 2")
+        {
+            <input type="text" @bind="marca.Image" placeholder="Imagem de Perfil" name="imagem" required>
+        }
+
+        <input type="text" @bind="user.Nif" placeholder="Número de Identificação Fiscal" name="nif" required>
+        <input type="text" @bind="user.Morada" placeholder="Morada" name="morada" required>
+
+        <div style="display: flex;">
+            <input type="text" @bind="user.Cidade" placeholder="Cidade" name="cidade" required style="flex: 1;">
+            <div style="width: 10px;"></div>
+            <input type="text" @bind="user.CodPostal" placeholder="Código Postal" name="cpostal" required style="flex: 1;">
+        </div>
+
+        <form>
+            <label>
+                <input type="radio" name="option" value="Option 1" @onchange="OptionChanged" />
+                Cliente
+            </label>
+            <label>
+                <input type="radio" name="option" value="Option 2" @onchange="OptionChanged" />
+                Marca
+            </label>
+        </form>
+        <input type="submit" value="Sign Up" @onclick="SubmitAsync">
+
+
+        @if (registrationFailed)
+        {
+            <p style="color:red;">Registo abortado dado a credenciais já registas.</p>
+        }
+
+    </div>
+
+</body>
+</html>
+
+@code {
+
+    Utilizador user = new Utilizador();
+    Marca marca = new Marca();
+    private string selectedOption;
+    bool registrationFailed = false;
+
+    async Task SubmitAsync()
+    {
+        if (selectedOption == "Option 1")
+        {
+            try
+            {
+                await UserService.CriarUser(user);
+            } catch (Exception e)
+            {
+                registrationFailed = true;
+                return;
+            }
+            NavigationManager.NavigateTo("/login", true);
+        }
+        else if (selectedOption == "Option 2")
+        {
+            try
+            {
+                marca.Nome = user.Nome;
+                marca.Nif  = user.Nif;
+                marca.Email = user.Email;
+                marca.Username = user.Username;
+                marca.Password = user.Password;
+                marca.Morada = user.Morada;
+                marca.Cidade = user.Cidade;
+                marca.CodPostal = user.CodPostal;
+                await MarcaService.CriarMarca(marca);
+            } catch (Exception e)
+            {
+                registrationFailed = true;
+                return;
+            }
+            NavigationManager.NavigateTo("/login", true);
+        }
+    }
+
+    private void OptionChanged(ChangeEventArgs e)
+    {
+        selectedOption = e.Value.ToString();
+    }
+}
